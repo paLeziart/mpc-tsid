@@ -24,7 +24,7 @@ dt_mpc = 0.02
 t = 0.0  # Time
 
 # Simulation parameters
-N_SIMULATION = 2500  # number of time steps simulated
+N_SIMULATION = 6000  # number of time steps simulated
 
 # Initialize the error for the simulation time
 time_error = False
@@ -91,16 +91,16 @@ for k in range(int(N_SIMULATION)):
 
     # Update the reference velocity coming from the gamepad once every 20 iterations of TSID
     if (k % 20) == 0:
-        joystick.update_v_ref(k)
+        joystick.update_v_ref_predefined(k)
 
     if (k == 0):
         fstep_planner.update_fsteps(k, mpc_interface.l_feet, np.vstack((mpc_interface.lV, mpc_interface.lW)), joystick.v_ref,
                                     mpc_interface.lC[2, 0], mpc_interface.oMl, [], False)
-    elif (k > 0) and (k % 320 == 20):
+    """elif (k > 0) and (k % 320 == 20):
         if joystick.gp.R1Button.value:
             fstep_planner.create_static()
         elif joystick.gp.L1Button.value:
-            fstep_planner.create_walking_trot()
+            fstep_planner.create_walking_trot()"""
 
     # Update footsteps desired location once every 20 iterations of TSID
     if (k % 20) == 0:

@@ -1,7 +1,7 @@
 # coding: utf8
 
 import numpy as np
-import gamepadClient as gC
+# import gamepadClient as gC
 
 
 class Joystick:
@@ -54,10 +54,10 @@ class Joystick:
         """
 
         # Moving forwards
-        if k_loop == 20*16:
+        if k_loop == 20*16*4:  # 20 * 16 * Num to change velocity during a 4-stance phase
             self.v_ref = np.array([[0.3, 0.0, 0.0, 0.0, 0.0, 0.0]]).T
 
-        # Turning
+        """# Turning
         if k_loop == 2000:
             self.v_ref = np.array([[0.2, 0.0, 0.0, 0.0, 0.0, 0.0]]).T
 
@@ -67,7 +67,7 @@ class Joystick:
 
         # Turning
         if k_loop == 6000:
-            self.v_ref = np.array([[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]).T
+            self.v_ref = np.array([[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]).T"""
 
         """# Moving forwards
         if k_loop == 200:
