@@ -87,7 +87,6 @@ for k in range(int(N_SIMULATION)):
 
     # Update the mpc_interface that makes the interface between the simulation and the MPC/TSID
     mpc_interface.update(solo, myController.qtsid, myController.vtsid)
-    # myController.qtsid[2] -= mpc_interface.mean_feet_z
 
     # Update the reference velocity coming from the gamepad once every 20 iterations of TSID
     if (k % 20) == 0:

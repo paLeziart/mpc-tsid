@@ -879,7 +879,7 @@ class controller:
         self.ades = self.invdyn.getAccelerations(self.sol)
         self.vtsid += self.ades * dt
         self.qtsid = pin.integrate(self.model, self.qtsid, self.vtsid * dt)
-        #print(self.ades[2].ravel())
+
         # Call display and log function
         # self.display(t, solo, k_simu, sequencer)
         # self.log(t, solo, k_simu, sequencer, mpc_interface)
