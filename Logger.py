@@ -2,7 +2,7 @@
 
 import numpy as np
 from matplotlib import pyplot as plt
-import pybullet as pyb
+# import pybullet as pyb
 
 class Logger:
     """Joystick-like controller that outputs the reference velocity in local frame
@@ -335,7 +335,7 @@ class Logger:
         for i, j in enumerate(tsid_controller.contacts_order):
             self.forces_tsid[(3*j):(3*(j+1)), k:(k+1)] = tsid_controller.fc[(3*i):(3*(i+1))]
 
-        # Contact forces applied in PyBullet
+        """# Contact forces applied in PyBullet
         contactPoints_FL = pyb.getContactPoints(robotId, planeId, linkIndexA=3)  # Front left  foot
         contactPoints_FR = pyb.getContactPoints(robotId, planeId, linkIndexA=7)  # Front right foot
         contactPoints_HL = pyb.getContactPoints(robotId, planeId, linkIndexA=11)  # Hind left  foot
@@ -361,15 +361,15 @@ class Logger:
                                           contact[11][i_direction] + contact[12] * contact[13][i_direction])
                     end[i_direction] += K * f_tmp[i_direction]
 
-                """if contact[3] < 10:
+                "if contact[3] < 10:
                     print("Link  ", contact[3], "| Contact force: (", f_tmp[0], ", ", f_tmp[1], ", ", f_tmp[2], ")")
                 else:
-                    print("Link ", contact[3], "| Contact force: (", f_tmp[0], ", ", f_tmp[1], ", ", f_tmp[2], ")")"""
+                    print("Link ", contact[3], "| Contact force: (", f_tmp[0], ", ", f_tmp[1], ", ", f_tmp[2], ")")""
 
                 f_tmps[:, int(contact[3]/4)] += np.array(f_tmp)
 
         for i in range(4):
-            self.forces_pyb[(3*i):(3*(i+1)), k] = f_tmps[:, i]
+            self.forces_pyb[(3*i):(3*(i+1)), k] = f_tmps[:, i]"""
 
         return 0
 

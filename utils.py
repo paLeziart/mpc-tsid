@@ -12,8 +12,8 @@ import MPC
 import Logger
 import MpcInterface
 
-import pybullet as pyb  # Pybullet server
-import pybullet_data
+"""import pybullet as pyb  # Pybullet server
+import pybullet_data"""
 import pinocchio as pin
 
 ##########################

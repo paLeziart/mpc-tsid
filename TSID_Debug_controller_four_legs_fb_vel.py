@@ -14,7 +14,7 @@ import numpy.matlib as matlib
 import tsid
 import FootTrajectoryGenerator as ftg
 import FootstepPlanner
-import pybullet as pyb
+# import pybullet as pyb
 import utils
 import time
 pin.switchToNumpyMatrix()
@@ -412,9 +412,9 @@ class controller:
             self.feetGoal[i_foot].translation = np.matrix([x0, y0, z0]).T
 
             # Display the goal position of the feet as green sphere
-            pyb.resetBasePositionAndOrientation(ftps_Ids_deb[i_foot],
+            """pyb.resetBasePositionAndOrientation(ftps_Ids_deb[i_foot],
                                                 posObj=np.array([gx1, gy1, 0.0]),
-                                                ornObj=np.array([0.0, 0.0, 0.0, 1.0]))
+                                                ornObj=np.array([0.0, 0.0, 0.0, 1.0]))"""
 
             """if k_loop == (7*20 + 19):
                 print("i_foot " + str(i_foot) + ": ", (mpc_interface.oMl.inverse() * np.array([[x0, y0, z0]]).transpose()).ravel())

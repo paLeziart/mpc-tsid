@@ -5,8 +5,8 @@ import matplotlib.pylab as plt
 import utils
 import time
 
-import pybullet as pyb
-import pybullet_data
+"""import pybullet as pyb
+import pybullet_data"""
 from TSID_Debug_controller_four_legs_fb_vel import controller, dt
 import Safety_controller
 import EmergencyStop_controller
@@ -57,10 +57,10 @@ solo = utils.init_viewer(False)
 ########################################################################
 
 # Initialisation of the PyBullet simulator
-pyb_sim = utils.pybullet_simulator(dt=0.001)
+# pyb_sim = utils.pybullet_simulator(dt=0.001)
 
 # Force monitor to display contact forces in PyBullet with red lines
-myForceMonitor = ForceMonitor.ForceMonitor(pyb_sim.robotId, pyb_sim.planeId)
+# myForceMonitor = ForceMonitor.ForceMonitor(pyb_sim.robotId, pyb_sim.planeId)
 
 ########################################################################
 #                             Simulator                                #
@@ -78,12 +78,13 @@ for k in range(int(N_SIMULATION)):
 
     if k == 0:
         # Retrieve data from the simulation (position/orientation/velocity of the robot)
-        pyb_sim.retrieve_pyb_data()
+        # pyb_sim.retrieve_pyb_data()
 
         # Check the state of the robot to trigger events and update the simulator camera
-        pyb_sim.check_pyb_env(pyb_sim.qmes12)
-        myController.qtsid = pyb_sim.qmes12
-        myController.vtsid = pyb_sim.vmes12
+        # pyb_sim.check_pyb_env(pyb_sim.qmes12)
+        myController.qtsid = np.array([[0.0, 0.0, 0.2395, 0.0, 0.0, 0.0, 1.0, 0.0, 0.8, -1.6,
+                                        0.0, 0.8, -1.6, 0.0, -0.8, 1.6, 0.0, -0.8, 1.6]]).transpose()
+        myController.vtsid = np.zeros((18, 1))
 
     # Update the mpc_interface that makes the interface between the simulation and the MPC/TSID
     mpc_interface.update(solo, myController.qtsid, myController.vtsid)
@@ -94,7 +95,7 @@ for k in range(int(N_SIMULATION)):
 
     if (k == 0):
         fstep_planner.update_fsteps(k, mpc_interface.l_feet, np.vstack((mpc_interface.lV, mpc_interface.lW)), joystick.v_ref,
-                                    mpc_interface.lC[2, 0], mpc_interface.oMl, pyb_sim.ftps_Ids, False)
+                                    mpc_interface.lC[2, 0], mpc_interface.oMl, [], False)
     elif (k > 0) and (k % 320 == 20):
         if joystick.gp.R1Button.value:
             fstep_planner.create_static()
@@ -106,7 +107,7 @@ for k in range(int(N_SIMULATION)):
         fsteps_invdyn = fstep_planner.fsteps.copy()
         gait_invdyn = fstep_planner.gait.copy()
         fstep_planner.update_fsteps(k+1, mpc_interface.l_feet, np.vstack((mpc_interface.lV, mpc_interface.lW)), joystick.v_ref,
-                                    mpc_interface.lC[2, 0], mpc_interface.oMl, pyb_sim.ftps_Ids, joystick.reduced)
+                                    mpc_interface.lC[2, 0], mpc_interface.oMl, [], joystick.reduced)
 
     #######
     # MPC #
@@ -116,7 +117,7 @@ for k in range(int(N_SIMULATION)):
     if (k % 20) == 0:
 
         # Debug lines
-        if len(ID_deb_lines) == 0:
+        """if len(ID_deb_lines) == 0:
             for i_line in range(4):
                 start = mpc_interface.oMl * np.array([[mpc_interface.l_shoulders[0, i_line], mpc_interface.l_shoulders[1, i_line], 0.01]]).transpose()
                 end = mpc_interface.oMl * np.array([[mpc_interface.l_shoulders[0, i_line] + 0.4, mpc_interface.l_shoulders[1, i_line], 0.01]]).transpose()
@@ -127,7 +128,7 @@ for k in range(int(N_SIMULATION)):
                 start = mpc_interface.oMl * np.array([[mpc_interface.l_shoulders[0, i_line], mpc_interface.l_shoulders[1, i_line], 0.01]]).transpose()
                 end = mpc_interface.oMl * np.array([[mpc_interface.l_shoulders[0, i_line] + 0.4, mpc_interface.l_shoulders[1, i_line], 0.01]]).transpose()
                 lineID = pyb.addUserDebugLine(np.array(start).ravel().tolist(), np.array(end).ravel().tolist(), lineColorRGB=[1.0, 0.0, 0.0], lineWidth=8,
-                                              replaceItemUniqueId=ID_deb_lines[i_line])
+                                              replaceItemUniqueId=ID_deb_lines[i_line])"""
 
         # Get the reference trajectory over the prediction horizon
         fstep_planner.getRefStates((k/20), sequencer.T_gait, mpc_interface.lC, mpc_interface.abg,
@@ -166,8 +167,8 @@ for k in range(int(N_SIMULATION)):
     # Retrieve the joint torques from the current active controller
     jointTorques = myController.control(myController.qtsid, myController.vtsid, t, k, solo,
                                         sequencer, mpc_interface, joystick.v_ref, f_applied,
-                                        fsteps_invdyn, gait_invdyn, pyb_sim.ftps_Ids_deb).reshape((12, 1))
-    #print(np.round(jointTorques.ravel(), decimals=2))
+                                        fsteps_invdyn, gait_invdyn, []).reshape((12, 1))
+    # print(np.round(jointTorques.ravel(), decimals=2))
 
     # Time incrementation
     t += dt
@@ -192,7 +193,7 @@ for k in range(int(N_SIMULATION)):
 
     # Call logger object to log various parameters
     logger.call_log_functions(k, sequencer, joystick, fstep_planner, mpc_interface, mpc_wrapper, myController,
-                              enable_multiprocessing, pyb_sim.robotId, pyb_sim.planeId)
+                              enable_multiprocessing, 0, 0)
 
 
     # Refresh force monitoring for PyBullet
