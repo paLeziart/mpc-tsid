@@ -79,6 +79,26 @@ class MpcInterface:
         for i in self.indexes[1:]:
             self.mean_feet_z = np.min((self.mean_feet_z, solo.data.oMf[i].translation[2, 0]))
 
+        """qmes12[2, 0] -= self.mean_feet_z
+
+        # Rotation matrix from the world frame to the base frame
+        self.oRb = pin.Quaternion(qmes12[3:7]).matrix()
+
+        # Linear and angular velocity in base frame
+        self.vmes12_base = vmes12.copy()
+        self.vmes12_base[0:3, 0:1] = self.oRb.transpose() @ self.vmes12_base[0:3, 0:1]
+        self.vmes12_base[3:6, 0:1] = self.oRb.transpose() @ self.vmes12_base[3:6, 0:1]
+
+        # Update Kinematics (required or automatically done by other functions?)
+        pin.forwardKinematics(solo.model, solo.data, qmes12, self.vmes12_base)
+        pin.framesForwardKinematics(solo.model, solo.data, qmes12)
+
+        # Get center of mass from Pinocchio
+        pin.centerOfMass(solo.model, solo.data, qmes12, self.vmes12_base)
+
+        # Update position/orientation of frames
+        pin.updateFramePlacements(solo.model, solo.data)"""
+
         # Store position, linear velocity and angular velocity in global frame
         self.oC = solo.data.com[0]
         self.oV = solo.data.vcom[0]

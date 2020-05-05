@@ -60,7 +60,7 @@ class controller:
         w_posture = 1.0         # weight of the posture task
 
         # Coefficients of the contact tasks
-        kp_contact = 0.0         # proportionnal gain for the contacts
+        kp_contact = 100.0         # proportionnal gain for the contacts
         self.w_forceRef = 100.0  # weight of the forces regularization
         self. w_reg_f = 100.0
 
@@ -688,6 +688,9 @@ class controller:
         # Index of the first blank line in the gait matrix
         index = next((idx for idx, val in np.ndenumerate(gait[:, 0]) if (((val==0)))), [-1])[0]
 
+        tmp = mpc_interface.o_feet.copy()
+        tmp[2, :] = 0.0
+
         # Check status of each foot
         for i_foot in range(4):
 
@@ -703,12 +706,12 @@ class controller:
             # If foot in stance phasce
             if (gait[0, i_foot+1] == 1):
                 # Update the position of contacts
-                self.pos_foot.translation = mpc_interface.o_feet[:, i_foot]
+                self.pos_foot.translation = tmp[:, i_foot]
                 self.pos_contact[i_foot] = self.pos_foot.translation.transpose()
-                self.memory_contacts[:, i_foot] = mpc_interface.o_feet[0:2, i_foot]
-                self.feetGoal[i_foot].translation = mpc_interface.o_feet[:, i_foot].transpose()
+                self.memory_contacts[:, i_foot] = tmp[0:2, i_foot]
+                self.feetGoal[i_foot].translation = tmp[:, i_foot].transpose()
                 self.contacts[i_foot].setReference(self.pos_foot)
-                self.goals[:, i_foot] = mpc_interface.o_feet[:, i_foot].transpose()
+                self.goals[:, i_foot] = tmp[:, i_foot].transpose()
 
             # If foot entered stance phase
             if (k_loop % 20 == 0) and (gait[0, i_foot+1] == 1) and (gait[index-1, i_foot+1] == 0):
@@ -874,9 +877,9 @@ class controller:
         # print(k_simu, " : ", self.fc.transpose())
         # print(self.fc.transpose())
         self.ades = self.invdyn.getAccelerations(self.sol)
-        # self.vtsid += self.ades * dt
-        # self.qtsid = pin.integrate(self.model, self.qtsid, self.vtsid * dt)
-
+        self.vtsid += self.ades * dt
+        self.qtsid = pin.integrate(self.model, self.qtsid, self.vtsid * dt)
+        #print(self.ades[2].ravel())
         # Call display and log function
         # self.display(t, solo, k_simu, sequencer)
         # self.log(t, solo, k_simu, sequencer, mpc_interface)
