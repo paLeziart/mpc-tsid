@@ -75,6 +75,11 @@ class Logger:
         dt_mpc = 0.02
         self.pred_trajectories = np.zeros((12, int(T/dt_mpc), int(k_max_loop/20)))
 
+        # Store information about the output of TSID
+        self.q = np.zeros((19, k_max_loop))
+        self.dq = np.zeros((18, k_max_loop))
+        self.ddq = np.zeros((18, k_max_loop))
+
     def log_state_vectors(self, mpc, k_loop):
         """ Log current and reference state vectors (position + velocity)
         """
@@ -499,6 +504,16 @@ class Logger:
 
         return 0
 
+    def log_tsid_output(self, k, tsid_controller):
+        """ Store information about the output of TSID
+        """
+
+        self.q[:, k:(k+1)] = tsid_controller.qtsid
+        self.dq[:, k:(k+1)] = tsid_controller.vtsid
+        self.ddq[:, k:(k+1)] = tsid_controller.ades
+
+        return 0
+
     def call_log_functions(self, k, sequencer, joystick, fstep_planner, mpc_interface, mpc_wrapper, tsid_controller, enable_multiprocessing, robotId, planeId):
         """ Call logging functions of the Logger class
         """
@@ -535,6 +550,9 @@ class Logger:
         # Store information about the predicted evolution of the optimization vector components
         if not enable_multiprocessing and ((k % 20) == 0):
             self.log_predicted_trajectories(k, mpc_wrapper)
+
+        # Store information about the output of TSID
+        self.log_tsid_output(k, tsid_controller)
 
         return 0
 
