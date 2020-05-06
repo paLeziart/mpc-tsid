@@ -59,27 +59,7 @@ class Joystick:
 
         """# Turning
         if k_loop == 2000:
-            self.v_ref = np.array([[0.2, 0.0, 0.0, 0.0, 0.0, 0.0]]).T
-
-        # Turning
-        if k_loop == 4000:
-            self.v_ref = np.array([[0.3, 0.0, 0.0, 0.0, 0.0, 0.0]]).T
-
-        # Turning
-        if k_loop == 6000:
-            self.v_ref = np.array([[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]).T"""
-
-        """# Moving forwards
-        if k_loop == 200:
             self.v_ref = np.array([[0.0, 0.0, 0.0, 0.0, 0.0, 0.4]]).T
-
-        # Turning
-        if k_loop == 4200:
-            self.v_ref = np.array([[0.3, 0.0, 0.0, 0.0, 0.0, 0.0]]).T"""
-
-        # Moving forwards
-        """if k_loop == 16000:
-            self.v_ref = np.array([[0.3, 0.0, 0.0, 0.0, 0.0, 0.0]]).T
 
         # Stoping
         if k_loop == 35000:
