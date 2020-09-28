@@ -9,6 +9,49 @@ import processing as proc
 import MPC_Wrapper
 import pybullet as pyb
 
+t_switch = np.array([0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0, 24.0, 27.0, 33.0, 36.0, 39.0, 42.0])
+q1 = 0.66 * np.pi
+q_switch = np.array([[0.0, 0.66 * np.pi, 0.0, 0.66 * np.pi, 0.0, 0.5 * np.pi, 0.5 * np.pi, 0.5 * np.pi, 0.0, -0.1 * np.pi, 0.0, 0.22 * np.pi, 0.0, 0.0],
+                    [0.8, 0.8,  -0.8, -0.8, 0.8, 0.8, 0.0, -0.8, -0.8, -1.4, np.pi*0.5, np.pi*0.5, np.pi*0.5, 0.0],
+                    [-1.6, -1.6,  1.6, 1.6, -1.6, -1.6, +1.0, -2.0, -2.0, 2.0, -np.pi, -np.pi*1.4, -np.pi, 0.0]])
+
+deb = 1
+def handle_q_v_switch(t):
+
+    i = 1
+    while (i < t_switch.shape[0]) and (t_switch[i] <= t):
+        i += 1
+
+    if (i != t_switch.shape[0]):
+        return apply_q_v_change(t, i)
+    else:
+        N = q_switch.shape[1]
+        return np.tile(q_switch[:, (N-1):N], (4, 1)) * np.array([[1, 1, 1, -1, 1, 1, 1, -1, -1, -1, -1, -1]]).transpose(), np.zeros((12,))
+
+
+def apply_q_v_change(t, i):
+
+    # Position
+    ev = t - t_switch[i-1]
+    t1 = t_switch[i] - t_switch[i-1]
+    A3 = 2 * (q_switch[:, (i-1):i] - q_switch[:, i:(i+1)]) / t1**3
+    A2 = (-3/2) * t1 * A3
+    q = q_switch[:, (i-1):i] + A2*ev**2 + A3*ev**3
+    v = 2 * A2 * ev + 3 * A3 * ev**2
+
+    q = np.tile(q, (4, 1)) * np.array([[1, 1, 1, -1, 1, 1, 1, -1, -1, -1, -1, -1]]).transpose()
+    v = np.tile(v, (4, 1)) * np.array([[1, 1, 1, -1, 1, 1, 1, -1, -1, -1, -1, -1]]).transpose()
+
+    return q, v
+
+def test_solo12(t):
+
+    q = np.array([0, 0.8, -1.6, 0, 0.8, -1.6, 0, -0.8, 1.6, 0, -0.8, 1.6])
+    v = np.zeros((12,))
+
+    q, v = handle_q_v_switch(t)
+
+    return q, v
 
 def run_scenario(envID, velID, dt_mpc, k_mpc, t, n_periods, T_gait, N_SIMULATION, type_MPC, pyb_feedback,
                  on_solo8, use_flat_plane, predefined_vel, enable_pyb_GUI):
@@ -97,7 +140,7 @@ def run_scenario(envID, velID, dt_mpc, k_mpc, t, n_periods, T_gait, N_SIMULATION
 
         time_loop = time.time()  # To analyze the time taken by each step
 
-        # Process state estimator
+        """# Process state estimator
         if k == 1:
             estimator.run_filter(k, fstep_planner.gait[0, 1:], pyb_sim.robotId,
                                  myController.invdyn.data(), myController.model)
@@ -153,17 +196,42 @@ def run_scenario(envID, velID, dt_mpc, k_mpc, t, n_periods, T_gait, N_SIMULATION
             # Saturation to limit the maximal torque
             t_max = 1.0
             jointTorques[jointTorques > t_max] = t_max
-            jointTorques[jointTorques < -t_max] = -t_max
+            jointTorques[jointTorques < -t_max] = -t_max"""
+        
+        revoluteJointIndices = [0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14]
+        jointStates = pyb.getJointStates(pyb_sim.robotId, revoluteJointIndices)  # State of all joints
+
+        if k == 0:
+            actuators_pos = np.zeros((12,))
+            actuators_vel = np.zeros((12,))
+
+            pyb.resetDebugVisualizerCamera(cameraDistance=0.6, cameraYaw=(45), cameraPitch=-39.9,
+                                           cameraTargetPosition=[0.0, 0.0, 0.2])  # qmes12[2, 0]-0.15])
+
+        actuators_pos[:] = np.array([state[0] for state in jointStates])
+        actuators_vel[:] = np.array([state[1] for state in jointStates])
 
         t_tsid = time.time()  # To analyze the time taken by each step
+        
+        KP = 4.
+        KD = 0.05
+        KT = 1.
+        tau_max = 3. * np.ones(12)
 
+        q_desired, v_desired = test_solo12(k*dt)
+        pos_error = q_desired.ravel() - actuators_pos[:]
+        vel_error = v_desired.ravel() - actuators_vel[:]
+        tau = KP * pos_error + KD * vel_error
+        jointTorques[:, 0] = np.maximum(np.minimum(tau, tau_max), -tau_max)
+
+        
         # Compute processing duration of each step
-        t_list_filter[k] = t_filter - time_loop
+        """t_list_filter[k] = t_filter - time_loop
         t_list_states[k] = t_states - t_filter
         t_list_fsteps[k] = t_fsteps - t_states
         t_list_mpc[k] = t_mpc - t_fsteps
         t_list_tsid[k] = t_tsid - t_mpc
-        t_list_loop[k] = time.time() - time_loop
+        t_list_loop[k] = time.time() - time_loop"""
 
         # Process PyBullet
         proc.process_pybullet(pyb_sim, k, envID, velID, jointTorques)
@@ -171,14 +239,14 @@ def run_scenario(envID, velID, dt_mpc, k_mpc, t, n_periods, T_gait, N_SIMULATION
         # Call logger object to log various parameters
         # logger.call_log_functions(k, pyb_sim, joystick, fstep_planner, interface, mpc_wrapper, myController,
         #                          False, pyb_sim.robotId, pyb_sim.planeId, solo)
-        logger.log_state(k, pyb_sim, joystick, interface, mpc_wrapper, solo)
+        # logger.log_state(k, pyb_sim, joystick, interface, mpc_wrapper, solo)
         # logger.log_forces(k, interface, myController, pyb_sim.robotId, pyb_sim.planeId)
         # logger.log_footsteps(k, interface, myController)
         # logger.log_fstep_planner(k, fstep_planner)
         # logger.log_tracking_foot(k, myController, solo)
 
         # Wait a bit to have simulated time = real time
-        while (time.time() - time_loop) < dt:
+        while (time.time() - time_loop) < 0.25*dt:
             pass
 
     ####################

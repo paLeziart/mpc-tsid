@@ -281,7 +281,7 @@ def process_pybullet(pyb_sim, k, envID, velID, jointTorques):
     """
 
     # Check the state of the robot to trigger events and update the simulator camera
-    pyb_sim.check_pyb_env(k, envID, velID, pyb_sim.qmes12)
+    # pyb_sim.check_pyb_env(k, envID, velID, pyb_sim.qmes12)
 
     # Set control torque for all joints
     pyb.setJointMotorControlArray(pyb_sim.robotId, pyb_sim.revoluteJointIndices,

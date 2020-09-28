@@ -451,7 +451,7 @@ class pybullet_simulator:
                                       controlMode=pyb.TORQUE_CONTROL, forces=jointTorques)
 
         # Fix the base in the world frame
-        # p.createConstraint(robotId, -1, -1, -1, p.JOINT_FIXED, [0, 0, 0], [0, 0, 0], [0, 0, 0.34])
+        pyb.createConstraint(self.robotId, -1, -1, -1, pyb.JOINT_FIXED, [0, 0, 0], [0, 0, 0], [0, 0, 0.38])
 
         # Set time step for the simulation
         pyb.setTimeStep(dt)
@@ -551,7 +551,7 @@ class pybullet_simulator:
 
         # Update the PyBullet camera on the robot position to do as if it was attached to the robot
         pyb.resetDebugVisualizerCamera(cameraDistance=0.6, cameraYaw=(0.0*RPY[2]*(180/3.1415)+45), cameraPitch=-39.9,
-                                       cameraTargetPosition=[qmes12[0, 0], qmes12[1, 0] + 0.0, 0.0])  # qmes12[2, 0]-0.15])
+                                       cameraTargetPosition=[qmes12[0, 0], qmes12[1, 0] + 0.0, 0.2])  # qmes12[2, 0]-0.15])
 
         return 0
 
